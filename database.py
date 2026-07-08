@@ -18,6 +18,20 @@ def init_db():
 def save_report(topic, report):
     conn = sqlite3.connect(DB_NAME)
 
+    # SAFETY CHECK: If report is a list, extract the text content from the last element
+    if isinstance(report, list):
+        if len(report) > 0 and hasattr(report[-1], 'content'):
+            report = report[-1].content
+        elif len(report) > 0:
+            report = str(report[-1])
+        else:
+            report = ""
+    # If it is a LangChain message object instead of a raw string
+    elif hasattr(report, 'content'):
+        report = report.content
+    else:
+        report = str(report)
+
     conn.execute("INSERT INTO reports(topic, report) VALUES(?, ?)", (topic, report))
 
     conn.commit()
